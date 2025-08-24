@@ -1,12 +1,38 @@
 from django.db import models
+from django.core.exceptions import ValidationError
 
 
 class Pet(models.Model):
+    ESPECIE_CHOICES = [
+        ('cachorro', 'Cachorro'),
+        ('gato', 'Gato'),
+        ('ave', 'Ave'),
+        ('roedor', 'Roedor'),
+        ('reptil', 'Réptil'),
+        ('outro', 'Outro'),
+    ]
+
     nome = models.CharField(max_length=45)
-    especie = models.CharField(max_length=45)
-    raca = models.CharField(max_length=45)
-    observacao = models.CharField(max_length=255)
-    tutor = models.ForeignKey('core.Tutor', on_delete=models.PROTECT, related_name='pets', null=True, blank=True)
+    especie = models.CharField(max_length=20, choices=ESPECIE_CHOICES, default='cachorro')
+    raca = models.CharField(max_length=45, blank=True, null=True)
+    idade = models.PositiveIntegerField(blank=True, null=True)
+    peso = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+    observacao = models.CharField(max_length=255, blank=True, null=True)
+    tutor = models.ForeignKey('core.Tutor', on_delete=models.PROTECT, related_name='pets')
+
+    def clean(self):
+        """Validação personalizada"""
+        if not self.tutor:
+            raise ValidationError('O pet deve ter um tutor associado.')
+
+        if self.peso and self.peso <= 0:
+            raise ValidationError('O peso deve ser maior que zero.')
 
     def __str__(self):
-        return f'({self.id}) {self.nome} ({self.raca}) ({self.especie}) ({self.observacao})'
+        tutor_nome = self.tutor.user.username if self.tutor else 'Sem tutor'
+        return f'{self.nome} ({self.raca}) - {self.especie} | Tutor: {tutor_nome}'
+
+    class Meta:
+        verbose_name = 'Pet'
+        verbose_name_plural = 'Pets'
+        ordering = ['nome']
