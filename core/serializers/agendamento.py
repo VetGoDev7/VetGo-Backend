@@ -35,7 +35,7 @@ class AgendamentoSerializer(serializers.ModelSerializer):
         """
         Validação customizada para o agendamento
         """
-        # Verifica se o pet pertence ao tutor
+        
         if data.get('pet') and data.get('tutor'):
             if data['pet'].tutor != data['tutor']:
                 raise serializers.ValidationError(
