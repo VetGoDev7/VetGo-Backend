@@ -2,11 +2,13 @@ from rest_framework.viewsets import ModelViewSet
 from core.models import Veterinario
 from core.serializers import VeterinarioSerializer
 
-class VeterinarioViewsets(ModelViewSet):
+
+class VeterinarioViewSet(ModelViewSet):
     """
     ViewSet para gerenciar os veterinários.
     Permite operações CRUD (Create, Read, Update, Delete) para o modelo Veterinario.
     """
+
     queryset = Veterinario.objects.all()  # Define a queryset que será usada para as operações
     serializer_class = VeterinarioSerializer  # Define o serializer que será usado para validar e serializar os dados
 

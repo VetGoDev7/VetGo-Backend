@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.validators import EmailValidator
 
+
 class Veterinario(models.Model):
     ESPECIALIDADE_CHOICES = [
         ('clinica_geral', 'Clínica Geral'),
@@ -10,7 +11,7 @@ class Veterinario(models.Model):
         ('oftalmologia', 'Oftalmologia'),
         ('cardiologia', 'Cardiologia'),
     ]
-    
+
     nome_completo = models.CharField(max_length=100)
     especialidade = models.CharField(max_length=45, choices=ESPECIALIDADE_CHOICES)
     email = models.EmailField(validators=[EmailValidator()])

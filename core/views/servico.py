@@ -4,6 +4,6 @@ from core.models import Servico
 from core.serializers import ServicoSerializer
 
 
-class ServicoViewsets(ModelViewSet):
+class ServicoViewSet(ModelViewSet):
     queryset = Servico.objects.all()
     serializer_class = ServicoSerializer

@@ -4,7 +4,9 @@ from rest_framework.response import Response
 from django.utils import timezone
 from django.db.models import Q
 from core.models import Agendamento
-from core.serializers import AgendamentoSerializer
+from core.serializers.agendamento import AgendamentoSerializer
+from django.db.models import Count
+from core.models import Veterinario
 
 
 class AgendamentoViewSet(viewsets.ModelViewSet):
@@ -97,8 +99,6 @@ class AgendamentoViewSet(viewsets.ModelViewSet):
         """
         Retorna estatísticas de agendamentos por veterinário
         """
-        from django.db.models import Count
-        from core.models import Veterinario
 
         veterinarios = Veterinario.objects.annotate(
             total_agendamentos=Count('agendamentos'),

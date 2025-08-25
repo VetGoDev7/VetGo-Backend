@@ -2,7 +2,7 @@ from rest_framework.viewsets import ModelViewSet
 from core.models import Pet
 from core.serializers import PetSerializer
 
-class PetViewsets(ModelViewSet):
+class PetViewSet(ModelViewSet):
     """
     ViewSet para gerenciar os pets.
     Permite operações CRUD (Create, Read, Update, Delete) para o modelo Pet.

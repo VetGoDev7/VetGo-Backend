@@ -1,24 +1,18 @@
 from django.db import models
 from django.core.exceptions import ValidationError
+from core.models import Tutor
 
 
 class Pet(models.Model):
-    ESPECIE_CHOICES = [
-        ('cachorro', 'Cachorro'),
-        ('gato', 'Gato'),
-        ('ave', 'Ave'),
-        ('roedor', 'Roedor'),
-        ('reptil', 'Réptil'),
-        ('outro', 'Outro'),
-    ]
-
     nome = models.CharField(max_length=45)
-    especie = models.CharField(max_length=20, choices=ESPECIE_CHOICES, default='cachorro')
+    especie = models.CharField(
+        max_length=20,
+    )
     raca = models.CharField(max_length=45, blank=True, null=True)
     idade = models.PositiveIntegerField(blank=True, null=True)
     peso = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
     observacao = models.CharField(max_length=255, blank=True, null=True)
-    tutor = models.ForeignKey('core.Tutor', on_delete=models.PROTECT, related_name='pets')
+    tutor = models.ForeignKey('Tutor', on_delete=models.PROTECT, related_name='pet')
 
     def clean(self):
         """Validação personalizada"""
