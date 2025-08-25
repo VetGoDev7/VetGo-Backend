@@ -12,12 +12,12 @@ class Veterinario(models.Model):
         ('cardiologia', 'Cardiologia'),
     ]
 
-    nome_completo = models.CharField(max_length=100)
-    especialidade = models.CharField(max_length=45, choices=ESPECIALIDADE_CHOICES)
+    nome_completo = models.CharField(max_length=100, blank=True, null=True)
+    especialidade = models.CharField(max_length=45, choices=ESPECIALIDADE_CHOICES, blank=True, null=True)
     email = models.EmailField(validators=[EmailValidator()])
-    telefone = models.CharField(max_length=11)
-    horario_atendimento = models.CharField(max_length=100)
-    crmv = models.CharField(max_length=10, unique=True, verbose_name='CRMV')
+    telefone = models.CharField(max_length=11, blank=True)
+    horario_atendimento = models.CharField(max_length=100, blank=True, null=True)
+    crmv = models.CharField(max_length=10, unique=True, verbose_name='CRMV', null=True, blank=True)
 
     def __str__(self):
         return f'{self.nome_completo} - {self.get_especialidade_display()}'
