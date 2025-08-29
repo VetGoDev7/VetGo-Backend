@@ -12,7 +12,7 @@ class Pet(models.Model):
     idade = models.PositiveIntegerField(blank=True, null=True)
     peso = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
     observacao = models.CharField(max_length=255, blank=True, null=True)
-    tutor = models.ForeignKey('Tutor', on_delete=models.PROTECT, related_name='pet')
+    tutor = models.ForeignKey(Tutor, on_delete=models.SET_NULL, null=True, blank=True)
 
     def clean(self):
         """Validação personalizada"""
@@ -23,7 +23,7 @@ class Pet(models.Model):
             raise ValidationError('O peso deve ser maior que zero.')
 
     def __str__(self):
-        tutor_nome = self.tutor.user.username if self.tutor else 'Sem tutor'
+        tutor_nome = self.tutor.nome_completo if self.tutor else 'Sem tutor'
         return f'{self.nome} ({self.raca}) - {self.especie} | Tutor: {tutor_nome}'
 
     class Meta:
