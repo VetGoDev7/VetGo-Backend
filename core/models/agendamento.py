@@ -11,14 +11,15 @@ class Agendamento(models.Model):
     )
 
     data_hora = models.DateTimeField()
-    tutor = models.ForeignKey('Tutor', on_delete=models.PROTECT, related_name='agendamentos', default=1)
-    pet = models.ForeignKey('Pet', on_delete=models.PROTECT, related_name='agendamentos', default=1)
-    veterinario = models.ForeignKey('Veterinario', on_delete=models.PROTECT, related_name='agendamentos', default=1)
-    servico = models.ForeignKey('servico', on_delete=models.CASCADE, default=1)
+    tutor = models.ForeignKey('Tutor', on_delete=models.PROTECT, related_name='agendamentos')
+    pet = models.ForeignKey('Pet', on_delete=models.PROTECT, related_name='agendamentos')
+    veterinario = models.ForeignKey('Veterinario', on_delete=models.PROTECT, related_name='agendamentos')
+    servico = models.ForeignKey('servico', on_delete=models.CASCADE)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pendente')
 
     def clean(self):
-        """Validações customizadas"""
+        if not self.veterinario:
+            raise ValidationError('O veterinário deve ser informado.')
 
         if self.pet and self.tutor and self.pet.tutor_id != self.tutor.id:
             raise ValidationError('O pet selecionado não pertence a este tutor.')
@@ -37,10 +38,11 @@ class Agendamento(models.Model):
 
     def __str__(self):
         pet_nome = self.pet.nome if self.pet else 'Sem Pet'
-        vet_email = (
-            self.veterinario.user.email if self.veterinario and hasattr(self.veterinario, 'user') else 'Sem Veterinário'
-        )
-        return f'Agendamento: {self.data_hora} - {pet_nome} - {vet_email}'
+        if self.veterinario:
+            vet_nome = getattr(self.veterinario, 'nome_completo', None) or str(self.veterinario)
+        else:
+            vet_nome = 'Sem Veterinário'
+        return f'Agendamento: {self.data_hora} - {pet_nome} - {vet_nome}'
 
     class Meta:
         verbose_name = 'Agendamento'

@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.utils import timezone
 from core.models import Agendamento
 from core.serializers import TutorSerializer, PetSerializer, VeterinarioSerializer, ServicoSerializer
 
@@ -33,9 +34,16 @@ class AgendamentoSerializer(serializers.ModelSerializer):
         }
 
     def validate(self, data):
-
         if data.get('pet') and data.get('tutor'):
             if data['pet'].tutor != data['tutor']:
                 raise serializers.ValidationError('O pet selecionado não pertence a este tutor.')
 
+        if not data.get('veterinario'):
+            raise serializers.ValidationError('O veterinário deve ser informado.')
+
         return data
+
+    def validate_data_hora(self, value):
+        if value < timezone.now():
+            raise serializers.ValidationError('A data e hora do agendamento não pode ser passada.')
+        return value
