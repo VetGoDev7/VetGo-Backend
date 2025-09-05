@@ -34,23 +34,16 @@ class AgendamentoSerializer(serializers.ModelSerializer):
         }
 
     def validate(self, data):
-<<<<<<< HEAD
-=======
-        """
-        Validação customizada para o agendamento
-        """
 
->>>>>>> c41bd23cc5cee5e02c093e17e11607ca22d04fb8
         if data.get('pet') and data.get('tutor'):
             if data['pet'].tutor != data['tutor']:
                 raise serializers.ValidationError('O pet selecionado não pertence a este tutor.')
 
-<<<<<<< HEAD
+
         if not data.get('veterinario'):
             raise serializers.ValidationError('O veterinário deve ser informado.')
 
-=======
->>>>>>> c41bd23cc5cee5e02c093e17e11607ca22d04fb8
+
         return data
 
     def validate_data_hora(self, value):
