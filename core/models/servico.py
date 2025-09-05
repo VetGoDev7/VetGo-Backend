@@ -6,7 +6,6 @@ class Servico(models.Model):
     descricao = models.CharField(max_length=255)
     tutor = models.ForeignKey('core.Tutor', on_delete=models.PROTECT, related_name='servicos', null=True, blank=True)
 
-
-def __str__(self):
-    tutor_nome = self.tutor.nome_completo if self.tutor else 'Sem tutor'
-    return f'{self.nome} - {self.descricao} | Tutor: {tutor_nome}'
+    def __str__(self):
+        tutor_nome = self.tutor.nome_completo if self.tutor else 'Sem tutor'
+        return f'{self.nome} - {self.descricao} | Tutor: {tutor_nome}'

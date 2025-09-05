@@ -2,12 +2,13 @@ from rest_framework import serializers
 from core.models import Agendamento
 from core.serializers import TutorSerializer, PetSerializer, VeterinarioSerializer, ServicoSerializer
 
+
 class AgendamentoSerializer(serializers.ModelSerializer):
     tutor_info = TutorSerializer(source='tutor', read_only=True)
     pet_info = PetSerializer(source='pet', read_only=True)
     veterinario_info = VeterinarioSerializer(source='veterinario', read_only=True)
     servico_info = ServicoSerializer(source='servico', read_only=True)
-    
+
     class Meta:
         model = Agendamento
         fields = [
@@ -16,12 +17,12 @@ class AgendamentoSerializer(serializers.ModelSerializer):
             'status',
             'tutor',
             'tutor_info',
-            'pet', 
+            'pet',
             'pet_info',
             'veterinario',
             'veterinario_info',
             'servico',
-            'servico_info'
+            'servico_info',
         ]
         read_only_fields = ['id']
         extra_kwargs = {
@@ -32,14 +33,9 @@ class AgendamentoSerializer(serializers.ModelSerializer):
         }
 
     def validate(self, data):
-        """
-        Validação customizada para o agendamento
-        """
-        
+
         if data.get('pet') and data.get('tutor'):
             if data['pet'].tutor != data['tutor']:
-                raise serializers.ValidationError(
-                    "O pet selecionado não pertence a este tutor."
-                )
-        
+                raise serializers.ValidationError('O pet selecionado não pertence a este tutor.')
+
         return data

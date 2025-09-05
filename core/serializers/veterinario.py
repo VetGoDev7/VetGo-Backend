@@ -3,7 +3,7 @@ from core.models import Veterinario
 
 
 class VeterinarioSerializer(serializers.ModelSerializer):
-    # Campos computados/adicionais
+
     nome_completo = serializers.CharField(source='user.nome_completo', read_only=True)
     email = serializers.EmailField(source='user.email', read_only=True)
     qtd_agendamentos = serializers.SerializerMethodField()
@@ -54,7 +54,6 @@ class VeterinarioSerializer(serializers.ModelSerializer):
         if len(crmv_clean) < 5:
             raise serializers.ValidationError('O CRMV deve ter pelo menos 5 dígitos.')
 
-        # Verifica se já existe outro veterinário com o mesmo CRMV
         queryset = Veterinario.objects.filter(crmv=value)
         if self.instance:
             queryset = queryset.exclude(pk=self.instance.pk)
@@ -65,7 +64,6 @@ class VeterinarioSerializer(serializers.ModelSerializer):
         return value
 
     def validate_especialidade(self, value):
-        """Validação customizada para a especialidade"""
         value = value.strip()
         if len(value) < 3:
             raise serializers.ValidationError('A especialidade deve ter pelo menos 3 caracteres.')
@@ -81,7 +79,6 @@ class VeterinarioSerializer(serializers.ModelSerializer):
         """Customiza a representação dos dados"""
         representation = super().to_representation(instance)
 
-        # Formata a especialidade com primeira letra maiúscula
         if 'especialidade' in representation and representation['especialidade']:
             representation['especialidade'] = representation['especialidade'].title()
 
