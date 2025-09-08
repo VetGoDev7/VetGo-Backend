@@ -3,7 +3,6 @@ from core.models import Veterinario
 
 
 class VeterinarioSerializer(serializers.ModelSerializer):
-
     nome_completo = serializers.CharField(source='user.nome_completo', read_only=True)
     email = serializers.EmailField(source='user.email', read_only=True)
     qtd_agendamentos = serializers.SerializerMethodField()
@@ -21,10 +20,10 @@ class VeterinarioSerializer(serializers.ModelSerializer):
             'crmv',
             'telefone',
             'qtd_agendamentos',
-            'created_at',
-            'updated_at',
+            #'created_at',
+            #'updated_at',
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at', 'qtd_agendamentos']
+        read_only_fields = ['id', 'qtd_agendamentos']
         extra_kwargs = {
             'especialidade': {'required': True},
             'crmv': {'required': True},
@@ -40,15 +39,12 @@ class VeterinarioSerializer(serializers.ModelSerializer):
         if not obj.horario_atendimento:
             return ''
 
-        # Exemplo: "Segunda a Sexta, 08:00-18:00"
         return obj.horario_atendimento
 
     def validate_crmv(self, value):
-        """Validação customizada para o CRMV"""
         if not value:
             raise serializers.ValidationError('O CRMV é obrigatório.')
 
-        # Remove caracteres não numéricos
         crmv_clean = ''.join(filter(str.isdigit, value))
 
         if len(crmv_clean) < 5:

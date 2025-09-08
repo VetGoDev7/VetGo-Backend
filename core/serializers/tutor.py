@@ -17,10 +17,10 @@ class TutorSerializer(serializers.ModelSerializer):
             'telefone_formatado',
             'endereco',
             'qtd_pets',
-            'created_at',
-            'updated_at',
+            #'created_at',
+            #'updated_at',
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        read_only_fields = ['id']
         extra_kwargs = {'email': {'required': True}, 'nome_completo': {'required': True}}
 
     def get_qtd_pets(self, obj):

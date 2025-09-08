@@ -3,7 +3,6 @@ from core.models import Pet
 
 
 class PetSerializer(serializers.ModelSerializer):
-    # Campos calculados/read-only
     idade = serializers.IntegerField(read_only=True)
     tutor_nome = serializers.CharField(source='tutor.nome_completo', read_only=True)
     tutor_email = serializers.CharField(source='tutor.email', read_only=True)
@@ -21,10 +20,10 @@ class PetSerializer(serializers.ModelSerializer):
             'tutor',
             'tutor_nome',
             'tutor_email',
-            'data_cadastro',
-            'data_atualizacao',
+            #'data_cadastro',
+            #'data_atualizacao',
         ]
-        read_only_fields = ['id', 'data_cadastro', 'data_atualizacao', 'idade']
+        read_only_fields = ['id', 'idade']
         extra_kwargs = {'tutor': {'write_only': True}}
 
     def validate_peso(self, value):

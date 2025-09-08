@@ -34,15 +34,12 @@ class AgendamentoSerializer(serializers.ModelSerializer):
         }
 
     def validate(self, data):
-
         if data.get('pet') and data.get('tutor'):
             if data['pet'].tutor != data['tutor']:
                 raise serializers.ValidationError('O pet selecionado não pertence a este tutor.')
 
-
         if not data.get('veterinario'):
             raise serializers.ValidationError('O veterinário deve ser informado.')
-
 
         return data
 
