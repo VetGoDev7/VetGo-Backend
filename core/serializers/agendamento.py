@@ -5,7 +5,7 @@ from core.serializers import TutorSerializer, PetSerializer, VeterinarioSerializ
 
 
 class AgendamentoSerializer(serializers.ModelSerializer):
-    tutor_info = TutorSerializer(source='tutor', read_only=True)
+    tutor_info = TutorSerializer(source='pet.tutor', read_only=True)  # 🔹 corrigido
     pet_info = PetSerializer(source='pet', read_only=True)
     veterinario_info = VeterinarioSerializer(source='veterinario', read_only=True)
     servico_info = ServicoSerializer(source='servico', read_only=True)
@@ -16,7 +16,6 @@ class AgendamentoSerializer(serializers.ModelSerializer):
             'id',
             'data_hora',
             'status',
-            'tutor',
             'tutor_info',
             'pet',
             'pet_info',
@@ -27,16 +26,15 @@ class AgendamentoSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id']
         extra_kwargs = {
-            'tutor': {'write_only': True},
             'pet': {'write_only': True},
             'veterinario': {'write_only': True},
             'servico': {'write_only': True},
         }
 
     def validate(self, data):
-        if data.get('pet') and data.get('tutor'):
-            if data['pet'].tutor != data['tutor']:
-                raise serializers.ValidationError('O pet selecionado não pertence a este tutor.')
+        pet = data.get('pet')
+        if pet and pet.tutor is None:
+            raise serializers.ValidationError('O pet informado não possui tutor cadastrado.')
 
         if not data.get('veterinario'):
             raise serializers.ValidationError('O veterinário deve ser informado.')

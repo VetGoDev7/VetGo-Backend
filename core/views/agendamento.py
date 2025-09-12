@@ -2,11 +2,9 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.utils import timezone
-from django.db.models import Q
-from core.models import Agendamento
+from django.db.models import Q, Count
+from core.models import Agendamento, Veterinario
 from core.serializers.agendamento import AgendamentoSerializer
-from django.db.models import Count
-from core.models import Veterinario
 
 
 class AgendamentoViewSet(viewsets.ModelViewSet):
@@ -14,7 +12,12 @@ class AgendamentoViewSet(viewsets.ModelViewSet):
     serializer_class = AgendamentoSerializer
 
     def get_queryset(self):
-        queryset = Agendamento.objects.select_related('tutor', 'pet', 'veterinario', 'servico')
+        queryset = Agendamento.objects.select_related(
+            'pet__tutor',
+            'pet',
+            'veterinario',
+            'servico'
+        )
 
         tutor_id = self.request.query_params.get('tutor_id')
         veterinario_id = self.request.query_params.get('veterinario_id')
@@ -23,7 +26,7 @@ class AgendamentoViewSet(viewsets.ModelViewSet):
         data_fim = self.request.query_params.get('data_fim')
 
         if tutor_id:
-            queryset = queryset.filter(tutor_id=tutor_id)
+            queryset = queryset.filter(pet__tutor_id=tutor_id)
 
         if veterinario_id:
             queryset = queryset.filter(veterinario_id=veterinario_id)
@@ -37,9 +40,7 @@ class AgendamentoViewSet(viewsets.ModelViewSet):
         if data_fim:
             queryset = queryset.filter(data_hora__lte=data_fim)
 
-        queryset = queryset.order_by('data_hora')
-
-        return queryset
+        return queryset.order_by('data_hora')
 
     def perform_create(self, serializer):
         serializer.save()
@@ -75,8 +76,12 @@ class AgendamentoViewSet(viewsets.ModelViewSet):
     def por_veterinario(self, request):
         veterinarios = Veterinario.objects.annotate(
             total_agendamentos=Count('agendamentos'),
-            agendamentos_confirmados=Count('agendamentos', filter=Q(agendamentos__status='confirmado')),
-            agendamentos_pendentes=Count('agendamentos', filter=Q(agendamentos__status='pendente')),
+            agendamentos_confirmados=Count(
+                'agendamentos', filter=Q(agendamentos__status='confirmado')
+            ),
+            agendamentos_pendentes=Count(
+                'agendamentos', filter=Q(agendamentos__status='pendente')
+            ),
         )
 
         data = []
