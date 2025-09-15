@@ -27,13 +27,12 @@ class PetSerializer(serializers.ModelSerializer):
         extra_kwargs = {'tutor': {'write_only': True}}
 
     def validate_peso(self, value):
-        """Validação customizada para o peso"""
         if value and value <= 0:
             raise serializers.ValidationError('O peso deve ser maior que zero.')
         return value
 
     def validate(self, data):
-        """Validação relacionada entre campos"""
+
         if data.get('peso') and data.get('especie') == 'ave' and data['peso'] > 10:
             raise serializers.ValidationError('Peso muito alto para uma ave.')
         return data

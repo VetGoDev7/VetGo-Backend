@@ -3,7 +3,6 @@ from core.models import Servico
 
 
 class ServicoSerializer(serializers.ModelSerializer):
-    # Campos computados/adicionais (opcional)
     qtd_agendamentos = serializers.SerializerMethodField()
 
     class Meta:
@@ -22,7 +21,6 @@ class ServicoSerializer(serializers.ModelSerializer):
         }
 
     def get_qtd_agendamentos(self, obj):
-        """Retorna a quantidade de agendamentos para este serviço"""
         return obj.agendamentos.count() if hasattr(obj, 'agendamentos') else 0
 
     def validate_nome(self, value):
