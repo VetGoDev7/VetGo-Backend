@@ -6,7 +6,15 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.translation import gettext_lazy as _
 
-from core import models 
+from core import models
+from core.models import Tutor
+
+
+@admin.register(Tutor)
+class TutorAdmin(admin.ModelAdmin):
+    list_display = ['nome_completo', 'email']
+    readonly_fields = []
+    search_fields = ['nome_completo', 'email']
 
 
 class UserAdmin(BaseUserAdmin):
@@ -17,16 +25,7 @@ class UserAdmin(BaseUserAdmin):
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
         (_('Personal Info'), {'fields': ('name', 'passage_id')}),
-        (
-            _('Permissions'),
-            {
-                'fields': (
-                    'is_active',
-                    'is_staff',
-                    'is_superuser',
-                )
-            },
-        ),
+        (_('Permissions'), {'fields': ('is_active', 'is_staff', 'is_superuser')}),
         (_('Important dates'), {'fields': ('last_login',)}),
         (_('Groups'), {'fields': ('groups',)}),
         (_('User Permissions'), {'fields': ('user_permissions',)}),
@@ -54,6 +53,5 @@ class UserAdmin(BaseUserAdmin):
 admin.site.register(models.User, UserAdmin)
 admin.site.register(models.Agendamento)
 admin.site.register(models.Pet)
-admin.site.register(models.Tutor)
 admin.site.register(models.Veterinario)
 admin.site.register(models.Servico)

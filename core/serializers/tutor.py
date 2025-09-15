@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from django.contrib.auth.hashers import make_password
 from core.models import Tutor
 
 
@@ -10,29 +9,12 @@ class TutorSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Tutor
-        fields = [
-            'id',
-            'nome_completo',
-            'email',
-            'senha',
-            'confirmar_senha',
-            'qtd_pets',
-        ]
+        fields = ['id', 'nome_completo', 'email', 'senha', 'confirmar_senha', 'qtd_pets']
         read_only_fields = ['id']
-        extra_kwargs = {
-            'email': {'required': True},
-            'nome_completo': {'required': True},
-        }
+        extra_kwargs = {'email': {'required': True}, 'nome_completo': {'required': True}}
 
     def get_qtd_pets(self, obj):
         return obj.pets.count() if hasattr(obj, 'pets') else 0
-
-    def validate_email(self, value):
-        if Tutor.objects.filter(email=value).exists():
-            if self.instance and self.instance.email == value:
-                return value
-            raise serializers.ValidationError('Este email já está cadastrado.')
-        return value
 
     def validate(self, data):
         if data['senha'] != data['confirmar_senha']:

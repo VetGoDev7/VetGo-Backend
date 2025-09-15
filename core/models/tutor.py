@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.validators import EmailValidator
+from django.contrib.auth.hashers import make_password
 
 
 class Tutor(models.Model):
@@ -18,3 +19,7 @@ class Tutor(models.Model):
 
     def __str__(self):
         return self.nome_completo
+
+    def set_password(self, raw_password):
+
+        self.senha = make_password(raw_password)
