@@ -32,7 +32,10 @@ class PetSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, data):
+<<<<<<< HEAD
 
+=======
+>>>>>>> 0f87b8cf1c4042b1a43f1158da62e4492b30cdee
         if data.get('peso') and data.get('especie') == 'ave' and data['peso'] > 10:
             raise serializers.ValidationError('Peso muito alto para uma ave.')
         return data

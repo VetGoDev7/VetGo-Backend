@@ -31,11 +31,9 @@ class VeterinarioSerializer(serializers.ModelSerializer):
         }
 
     def get_qtd_agendamentos(self, obj):
-        """Retorna a quantidade de agendamentos do veterinário"""
         return obj.agendamentos.count() if hasattr(obj, 'agendamentos') else 0
 
     def get_horario_atendimento_formatado(self, obj):
-        """Formata o horário de atendimento para exibição"""
         if not obj.horario_atendimento:
             return ''
 
@@ -66,13 +64,11 @@ class VeterinarioSerializer(serializers.ModelSerializer):
         return value
 
     def validate_horario_atendimento(self, value):
-        """Validação customizada para o horário de atendimento"""
         if not value or len(value.strip()) < 5:
             raise serializers.ValidationError('O horário de atendimento é obrigatório.')
         return value.strip()
 
     def to_representation(self, instance):
-        """Customiza a representação dos dados"""
         representation = super().to_representation(instance)
 
         if 'especialidade' in representation and representation['especialidade']:
