@@ -15,7 +15,6 @@ class PetSerializer(serializers.ModelSerializer):
             'especie',
             'raca',
             'idade',
-            'peso',
             'observacao',
             'tutor',
             'tutor_nome',
@@ -25,17 +24,3 @@ class PetSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id', 'idade']
         extra_kwargs = {'tutor': {'write_only': True}}
-
-    def validate_peso(self, value):
-        if value and value <= 0:
-            raise serializers.ValidationError('O peso deve ser maior que zero.')
-        return value
-
-    def validate(self, data):
-<<<<<<< HEAD
-
-=======
->>>>>>> 0f87b8cf1c4042b1a43f1158da62e4492b30cdee
-        if data.get('peso') and data.get('especie') == 'ave' and data['peso'] > 10:
-            raise serializers.ValidationError('Peso muito alto para uma ave.')
-        return data

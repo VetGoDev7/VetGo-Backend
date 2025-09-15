@@ -4,7 +4,7 @@ from core.models import Tutor
 
 
 class Pet(models.Model):
-<<<<<<< HEAD
+
     ESPECIE_CHOICES = [
         ('cachorro', 'Cachorro'),
         ('gato', 'Gato'),
@@ -12,14 +12,6 @@ class Pet(models.Model):
 
     nome = models.CharField(max_length=45)
     especie = models.CharField(max_length=20, choices=ESPECIE_CHOICES)
-=======
-    STATUS_CHOICES = (
-        ('cachorro', 'Cachorro'),
-        ('gato', 'Gato'),
-    )
-    nome = models.CharField(max_length=45)
-    especie = models.CharField(max_length=20, choices=STATUS_CHOICES)
->>>>>>> 0f87b8cf1c4042b1a43f1158da62e4492b30cdee
     raca = models.CharField(max_length=45, blank=True, null=True)
     idade = models.PositiveIntegerField(blank=True, null=True)
     observacao = models.CharField(max_length=255, blank=True, null=True)

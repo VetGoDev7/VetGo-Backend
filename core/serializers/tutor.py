@@ -28,30 +28,13 @@ class TutorSerializer(serializers.ModelSerializer):
     def get_qtd_pets(self, obj):
         return obj.pets.count() if hasattr(obj, 'pets') else 0
 
-<<<<<<< HEAD
     def validate_email(self, value):
-=======
-    def get_telefone_formatado(self, obj):
-        if not obj.telefone:
-            return ''
-
-        telefone = obj.telefone
-        if len(telefone) == 11:
-            return f'({telefone[:2]}) {telefone[2:7]}-{telefone[7:]}'
-        elif len(telefone) == 10:
-            return f'({telefone[:2]}) {telefone[2:6]}-{telefone[6:]}'
-        return telefone
-
-    def validate_email(self, value):
-
->>>>>>> 0f87b8cf1c4042b1a43f1158da62e4492b30cdee
         if Tutor.objects.filter(email=value).exists():
             if self.instance and self.instance.email == value:
                 return value
             raise serializers.ValidationError('Este email já está cadastrado.')
         return value
 
-<<<<<<< HEAD
 
 def create(self, validated_data):
     validated_data.pop('confirmar_senha')
@@ -64,10 +47,3 @@ def update(self, instance, validated_data):
     if 'senha' in validated_data:
         validated_data['senha'] = 'make_password'(validated_data['senha'])
     return super().update(instance, validated_data)
-=======
-    def validate_telefone(self, value):
-
-        if value and not value.isdigit():
-            raise serializers.ValidationError('O telefone deve conter apenas números.')
-        return value
->>>>>>> 0f87b8cf1c4042b1a43f1158da62e4492b30cdee
