@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.contrib.auth.hashers import make_password
 from core.models import Tutor
 
 
@@ -16,8 +17,6 @@ class TutorSerializer(serializers.ModelSerializer):
             'senha',
             'confirmar_senha',
             'qtd_pets',
-            # 'created_at',
-            # 'updated_at',
         ]
         read_only_fields = ['id']
         extra_kwargs = {
@@ -35,15 +34,25 @@ class TutorSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Este email já está cadastrado.')
         return value
 
+    def validate(self, data):
+        if data['senha'] != data['confirmar_senha']:
+            raise serializers.ValidationError({"confirmar_senha": "As senhas não coincidem."})
+        return data
 
-def create(self, validated_data):
-    validated_data.pop('confirmar_senha')
-    validated_data['senha'] = 'make_password'(validated_data['senha'])
-    return super().create(validated_data)
+    def create(self, validated_data):
+        validated_data.pop('confirmar_senha')
+        senha = validated_data.pop('senha')
+        tutor = Tutor(**validated_data)
+        tutor.set_password(senha)
+        tutor.save()
+        return tutor
 
-
-def update(self, instance, validated_data):
-    validated_data.pop('confirmar_senha', None)
-    if 'senha' in validated_data:
-        validated_data['senha'] = 'make_password'(validated_data['senha'])
-    return super().update(instance, validated_data)
+    def update(self, instance, validated_data):
+        validated_data.pop('confirmar_senha', None)
+        senha = validated_data.pop('senha', None)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        if senha:
+            instance.set_password(senha)
+        instance.save()
+        return instance
