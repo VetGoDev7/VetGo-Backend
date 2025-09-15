@@ -5,7 +5,7 @@ from core.serializers import TutorSerializer, PetSerializer, VeterinarioSerializ
 
 
 class AgendamentoSerializer(serializers.ModelSerializer):
-    tutor_info = TutorSerializer(source='pet.tutor', read_only=True)  # 🔹 corrigido
+    tutor_info = TutorSerializer(source='pet.tutor', read_only=True)  
     pet_info = PetSerializer(source='pet', read_only=True)
     veterinario_info = VeterinarioSerializer(source='veterinario', read_only=True)
     servico_info = ServicoSerializer(source='servico', read_only=True)

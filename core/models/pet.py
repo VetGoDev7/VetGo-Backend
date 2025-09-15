@@ -4,10 +4,12 @@ from core.models import Tutor
 
 
 class Pet(models.Model):
-    nome = models.CharField(max_length=45)
-    especie = models.CharField(
-        max_length=20,
+    STATUS_CHOICES = (
+        ('cachorro', 'Cachorro'),
+        ('gato', 'Gato'),
     )
+    nome = models.CharField(max_length=45)
+    especie = models.CharField(max_length=20, choices=STATUS_CHOICES)
     raca = models.CharField(max_length=45, blank=True, null=True)
     idade = models.PositiveIntegerField(blank=True, null=True)
     peso = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
@@ -15,7 +17,6 @@ class Pet(models.Model):
     tutor = models.ForeignKey(Tutor, on_delete=models.SET_NULL, null=True, blank=True)
 
     def clean(self):
-        """Validação personalizada"""
         if not self.tutor:
             raise ValidationError('O pet deve ter um tutor associado.')
 

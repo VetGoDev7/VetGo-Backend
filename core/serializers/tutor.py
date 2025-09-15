@@ -24,11 +24,9 @@ class TutorSerializer(serializers.ModelSerializer):
         extra_kwargs = {'email': {'required': True}, 'nome_completo': {'required': True}}
 
     def get_qtd_pets(self, obj):
-        """Retorna a quantidade de pets do tutor"""
         return obj.pets.count() if hasattr(obj, 'pets') else 0
 
     def get_telefone_formatado(self, obj):
-        """Formata o telefone para exibição (##) #####-####"""
         if not obj.telefone:
             return ''
 
@@ -40,7 +38,7 @@ class TutorSerializer(serializers.ModelSerializer):
         return telefone
 
     def validate_email(self, value):
-        """Validação customizada para email"""
+
         if Tutor.objects.filter(email=value).exists():
             if self.instance and self.instance.email == value:
                 return value
@@ -48,7 +46,7 @@ class TutorSerializer(serializers.ModelSerializer):
         return value
 
     def validate_telefone(self, value):
-        """Validação customizada para telefone"""
+
         if value and not value.isdigit():
             raise serializers.ValidationError('O telefone deve conter apenas números.')
         return value
