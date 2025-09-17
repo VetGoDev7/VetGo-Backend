@@ -1,40 +1,55 @@
 from rest_framework import serializers
 from core.models import Tutor
-
+from django.contrib.auth.hashers import make_password
 
 class TutorSerializer(serializers.ModelSerializer):
-    senha = serializers.CharField(write_only=True, required=True)
-    confirmar_senha = serializers.CharField(write_only=True, required=True)
     qtd_pets = serializers.SerializerMethodField()
+    telefone_formatado = serializers.SerializerMethodField()
+
+    senha = serializers.CharField(write_only=True, required=True, min_length=8)
+    confirmar_senha = serializers.CharField(write_only=True, required=True, min_length=8)
 
     class Meta:
         model = Tutor
-        fields = ['id', 'nome_completo', 'email', 'senha', 'confirmar_senha', 'qtd_pets']
+        fields = [
+            'id',
+            'nome_completo',
+            'email',
+            'qtd_pets',
+            'senha',
+            'confirmar_senha',
+        ]
         read_only_fields = ['id']
         extra_kwargs = {'email': {'required': True}, 'nome_completo': {'required': True}}
 
     def get_qtd_pets(self, obj):
         return obj.pets.count() if hasattr(obj, 'pets') else 0
 
+
+    def validate_email(self, value):
+        if Tutor.objects.filter(email=value).exists():
+            if self.instance and self.instance.email == value:
+                return value
+            raise serializers.ValidationError('Este email já está cadastrado.')
+        return value
+
+
     def validate(self, data):
-        if data['senha'] != data['confirmar_senha']:
-            raise serializers.ValidationError({"confirmar_senha": "As senhas não coincidem."})
+        senha = data.get('senha')
+        confirmar_senha = data.get('confirmar_senha')
+        if senha != confirmar_senha:
+            raise serializers.ValidationError({'confirmar_senha': 'As senhas não coincidem.'})
         return data
 
     def create(self, validated_data):
         validated_data.pop('confirmar_senha')
         senha = validated_data.pop('senha')
-        tutor = Tutor(**validated_data)
-        tutor.set_password(senha)
-        tutor.save()
-        return tutor
+        validated_data['senha'] = make_password(senha)
+        return super().create(validated_data)
 
     def update(self, instance, validated_data):
         validated_data.pop('confirmar_senha', None)
         senha = validated_data.pop('senha', None)
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
         if senha:
-            instance.set_password(senha)
-        instance.save()
-        return instance
+            instance.senha = make_password(senha)
+        return super().update(instance, validated_data)
