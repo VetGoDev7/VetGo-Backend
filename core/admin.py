@@ -7,11 +7,12 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.translation import gettext_lazy as _
 
 from core import models
-from core.models import Tutor
+from core.models import Tutor, TutorForm
 
 
 @admin.register(Tutor)
 class TutorAdmin(admin.ModelAdmin):
+    form = TutorForm
     list_display = ['nome_completo', 'email']
     readonly_fields = []
     search_fields = ['nome_completo', 'email']
