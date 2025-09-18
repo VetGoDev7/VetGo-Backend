@@ -3,7 +3,6 @@ from core.models import Tutor
 from django.contrib.auth.hashers import make_password
 
 class TutorSerializer(serializers.ModelSerializer):
-    qtd_pets = serializers.SerializerMethodField()
 
     senha = serializers.CharField(write_only=True, required=True, min_length=8)
     confirmar_senha = serializers.CharField(write_only=True, required=True, min_length=8)
@@ -14,15 +13,12 @@ class TutorSerializer(serializers.ModelSerializer):
             'id',
             'nome_completo',
             'email',
-            'qtd_pets',
             'senha',
             'confirmar_senha',
         ]
         read_only_fields = ['id']
         extra_kwargs = {'email': {'required': True}, 'nome_completo': {'required': True}}
-
-    def get_qtd_pets(self, obj):
-        return obj.pets.count() if hasattr(obj, 'pets') else 0
+    
 
     def validate_email(self, value):
         if Tutor.objects.filter(email=value).exists():

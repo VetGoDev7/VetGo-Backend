@@ -9,9 +9,13 @@ from rest_framework.routers import DefaultRouter
 
 
 from core.views import UserViewSet, TutorViewSet, PetViewSet, VeterinarioViewSet, ServicoViewSet, AgendamentoViewSet
+from .views.tutor import TutorViewSet
 
 router = DefaultRouter()
 
+urlpatterns = [
+    path('', include(router.urls)),
+]
 router.register(r'usuarios', UserViewSet, basename='usuarios')
 router.register(r'tutores', TutorViewSet, basename='tutor')
 router.register(r'pets', PetViewSet, basename='pet')
