@@ -19,8 +19,6 @@ class PetSerializer(serializers.ModelSerializer):
             'tutor',
             'tutor_nome',
             'tutor_email',
-            #'data_cadastro',
-            #'data_atualizacao',
         ]
         read_only_fields = ['id', 'idade']
         extra_kwargs = {'tutor': {'write_only': True}}

@@ -10,6 +10,7 @@ from rest_framework.routers import DefaultRouter
 
 from core.views import UserViewSet, TutorViewSet, PetViewSet, VeterinarioViewSet, ServicoViewSet, AgendamentoViewSet
 from .views.tutor import TutorViewSet
+from .views.pet import PetViewSet
 
 router = DefaultRouter()
 
