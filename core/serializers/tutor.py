@@ -22,9 +22,9 @@ class TutorSerializer(serializers.ModelSerializer):
 
     def validate_email(self, value):
         if Tutor.objects.filter(email=value).exists():
-            if self.instance and self.instance.email == value:
-                return value
-            raise serializers.ValidationError('Este email já está cadastrado.')
+         if self.instance and self.instance.email == value:
+            return value
+        raise serializers.ValidationError('Este email já está cadastrado.')
         return value
 
     def validate(self, data):
