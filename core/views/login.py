@@ -2,26 +2,10 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.viewsets import ModelViewSet
-from core.models import Tutor
 from django.contrib.auth.hashers import check_password
 from rest_framework_simplejwt.tokens import RefreshToken
-from core.serializers import TutorSerializer
-from rest_framework import viewsets
+from core.models import Tutor
 
-class TutorViewSet(viewsets.ModelViewSet):
-    queryset = Tutor.objects.all()
-    serializer_class = TutorSerializer
-
-
-    def perform_create(self, serializer):
-        serializer.save()
-
-    def perform_update(self, serializer):
-        serializer.save()
-
-    def perform_destroy(self, instance):
-        instance.delete()
-        
 class LoginView(APIView):
     def post(self, request):
         email = request.data.get('email')
