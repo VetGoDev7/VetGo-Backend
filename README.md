@@ -94,4 +94,3 @@ Esse projeto utiliza os seguintes pacotes e tecnologias:
 Este projeto está licenciado sob a [Licença GPL](https://www.gnu.org/licenses/gpl-3.0.html), uma licença de software livre.
 
 
-
