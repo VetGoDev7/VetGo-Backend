@@ -96,11 +96,25 @@ class AgendamentoViewSet(viewsets.ModelViewSet):
 
         return Response(data)
 
+
     def list(self, request, *args, **kwargs):
         response = super().list(request, *args, **kwargs)
-        response.data['metadata'] = {
-            'total': self.get_queryset().count(),
-            'filtros_aplicados': dict(request.query_params),
-            'timestamp': timezone.now().isoformat(),
-        }
+
+        if isinstance(response.data, list):
+            data = {
+                'results': response.data,
+                'metadata': {
+                    'total': self.get_queryset().count(),
+                    'filtros_aplicados': dict(request.query_params),
+                    'timestamp': timezone.now().isoformat(),
+                },
+            }
+            response.data = data
+        else:
+            response.data['metadata'] = {
+                'total': self.get_queryset().count(),
+                'filtros_aplicados': dict(request.query_params),
+                'timestamp': timezone.now().isoformat(),
+            }
+
         return response
