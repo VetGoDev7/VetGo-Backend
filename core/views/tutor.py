@@ -1,4 +1,3 @@
-
 from rest_framework import viewsets, permissions
 from rest_framework.exceptions import PermissionDenied
 from core.models import Tutor
@@ -6,8 +5,6 @@ from core.serializers import TutorSerializer
 
 
 class IsAdminOrTheTutor(permissions.BasePermission):
-
-
     def has_permission(self, request, view):
         return request.user and request.user.is_authenticated
 
@@ -34,7 +31,6 @@ class TutorViewSet(viewsets.ModelViewSet):
         if user.is_staff:
             return Tutor.objects.all()
 
-
         if hasattr(user, 'tutor'):
             return Tutor.objects.filter(id=user.tutor.id)
 
@@ -44,19 +40,18 @@ class TutorViewSet(viewsets.ModelViewSet):
         user = self.request.user
 
         if not user.is_staff:
-            raise PermissionDenied("Apenas admin pode criar tutores.")
+            raise PermissionDenied('Apenas admin pode criar tutores.')
 
         serializer.save()
 
     def perform_update(self, serializer):
         user = self.request.user
 
-
         if hasattr(user, 'tutor'):
-            if "user" in serializer.validated_data:
-                raise PermissionDenied("Você não pode alterar o usuário vinculado.")
+            if 'user' in serializer.validated_data:
+                raise PermissionDenied('Você não pode alterar o usuário vinculado.')
             if serializer.instance != user.tutor:
-                raise PermissionDenied("Você só pode editar seu próprio perfil.")
+                raise PermissionDenied('Você só pode editar seu próprio perfil.')
 
         serializer.save()
 
@@ -64,6 +59,6 @@ class TutorViewSet(viewsets.ModelViewSet):
         user = self.request.user
 
         if not user.is_staff:
-            raise PermissionDenied("Apenas admin pode excluir tutores.")
+            raise PermissionDenied('Apenas admin pode excluir tutores.')
 
         instance.delete()

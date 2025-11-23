@@ -5,7 +5,6 @@ from core.models import Tutor
 from django.contrib.auth.hashers import check_password
 from rest_framework_simplejwt.tokens import RefreshToken
 
-
 class LoginView(APIView):
     def post(self, request):
         email = request.data.get('email')
