@@ -1,120 +1,108 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.utils import timezone
-from django.db.models import Q, Count
-from core.models import Agendamento, Veterinario
+from core.models import Agendamento
 from core.serializers.agendamento import AgendamentoSerializer
 
 
+class IsAdminOrTutor(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return request.user and request.user.is_authenticated
+
+    def has_object_permission(self, request, view, obj):
+        user = request.user
+
+        if user.is_staff:
+            return True
+
+        if hasattr(user, 'tutor'):
+            return obj.pet.tutor == user.tutor
+
+        if hasattr(user, 'veterinario'):
+            return obj.veterinario == user.veterinario
+
+        return False
+
+
 class AgendamentoViewSet(viewsets.ModelViewSet):
-    queryset = Agendamento.objects.all()
+    queryset = Agendamento.objects.select_related('pet__tutor', 'pet', 'veterinario', 'servico').all()
     serializer_class = AgendamentoSerializer
+    permission_classes = [IsAdminOrTutor]
 
     def get_queryset(self):
-        queryset = Agendamento.objects.select_related(
-            'pet__tutor',
-            'pet',
-            'veterinario',
-            'servico'
-        )
+        user = self.request.user
+        qs = super().get_queryset()
 
-        tutor_id = self.request.query_params.get('tutor_id')
-        veterinario_id = self.request.query_params.get('veterinario_id')
-        status_filter = self.request.query_params.get('status')
-        data_inicio = self.request.query_params.get('data_inicio')
-        data_fim = self.request.query_params.get('data_fim')
+        if user.is_staff:
+            return qs.order_by('data_hora')
 
-        if tutor_id:
-            queryset = queryset.filter(pet__tutor_id=tutor_id)
+        if hasattr(user, 'tutor'):
+            return qs.filter(pet__tutor=user.tutor).order_by('data_hora')
 
-        if veterinario_id:
-            queryset = queryset.filter(veterinario_id=veterinario_id)
+        if hasattr(user, 'veterinario'):
+            return qs.filter(veterinario=user.veterinario).order_by('data_hora')
 
-        if status_filter:
-            queryset = queryset.filter(status=status_filter)
-
-        if data_inicio:
-            queryset = queryset.filter(data_hora__gte=data_inicio)
-
-        if data_fim:
-            queryset = queryset.filter(data_hora__lte=data_fim)
-
-        return queryset.order_by('data_hora')
+        return qs.none()
 
     def perform_create(self, serializer):
-        serializer.save()
+        user = self.request.user
+
+        if hasattr(user, 'tutor'):
+            pet = serializer.validated_data.get('pet')
+
+            if not pet:
+                raise permissions.PermissionDenied('É necessário informar o pet.')
+
+            if pet.tutor != user.tutor:
+                raise permissions.PermissionDenied('Você só pode agendar consultas para seus próprios pets.')
+
+            serializer.save(criado_por=user)
+
+        else:
+            serializer.save()
+
+    def perform_update(self, serializer):
+        user = self.request.user
+
+        if hasattr(user, 'tutor'):
+            forbidden = ['status', 'veterinario', 'pet']
+
+            for campo in forbidden:
+                if campo in serializer.validated_data:
+                    raise permissions.PermissionDenied(f'Tutor não pode alterar o campo: {campo}')
+
+            serializer.save()
+        else:
+            serializer.save()
 
     @action(detail=True, methods=['post'])
     def confirmar(self, request, pk=None):
-        agendamento = self.get_object()
-        agendamento.status = 'confirmado'
-        agendamento.save()
-        serializer = self.get_serializer(agendamento)
-        return Response(serializer.data)
+        if not request.user.is_staff:
+            return Response({'detail': 'Apenas admin pode alterar status.'}, status=status.HTTP_403_FORBIDDEN)
+
+        ag = self.get_object()
+        ag.status = 'confirmado'
+        ag.save()
+        return Response(self.get_serializer(ag).data)
 
     @action(detail=True, methods=['post'])
     def cancelar(self, request, pk=None):
-        agendamento = self.get_object()
-        agendamento.status = 'cancelado'
-        agendamento.save()
-        serializer = self.get_serializer(agendamento)
-        return Response(serializer.data)
+        if not request.user.is_staff:
+            return Response({'detail': 'Apenas admin pode alterar status.'}, status=status.HTTP_403_FORBIDDEN)
+
+        ag = self.get_object()
+        ag.status = 'cancelado'
+        ag.save()
+        return Response(self.get_serializer(ag).data)
 
     @action(detail=False, methods=['get'])
     def proximos(self, request):
         agora = timezone.now()
-        agendamentos = (
+        qs = (
             self.get_queryset()
             .filter(data_hora__gte=agora, status__in=['pendente', 'confirmado'])
             .order_by('data_hora')[:10]
         )
-        serializer = self.get_serializer(agendamentos, many=True)
-        return Response(serializer.data)
 
-    @action(detail=False, methods=['get'])
-    def por_veterinario(self, request):
-        veterinarios = Veterinario.objects.annotate(
-            total_agendamentos=Count('agendamentos'),
-            agendamentos_confirmados=Count(
-                'agendamentos', filter=Q(agendamentos__status='confirmado')
-            ),
-            agendamentos_pendentes=Count(
-                'agendamentos', filter=Q(agendamentos__status='pendente')
-            ),
-        )
-
-        data = []
-        for vet in veterinarios:
-            data.append({
-                'veterinario': vet.user.nome_completo if hasattr(vet, 'user') else 'N/A',
-                'especialidade': vet.especialidade,
-                'total_agendamentos': vet.total_agendamentos,
-                'confirmados': vet.agendamentos_confirmados,
-                'pendentes': vet.agendamentos_pendentes,
-            })
-
-        return Response(data)
-
-
-    def list(self, request, *args, **kwargs):
-        response = super().list(request, *args, **kwargs)
-
-        if isinstance(response.data, list):
-            data = {
-                'results': response.data,
-                'metadata': {
-                    'total': self.get_queryset().count(),
-                    'filtros_aplicados': dict(request.query_params),
-                    'timestamp': timezone.now().isoformat(),
-                },
-            }
-            response.data = data
-        else:
-            response.data['metadata'] = {
-                'total': self.get_queryset().count(),
-                'filtros_aplicados': dict(request.query_params),
-                'timestamp': timezone.now().isoformat(),
-            }
-
-        return response
+        return Response(self.get_serializer(qs, many=True).data)

@@ -7,31 +7,36 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.translation import gettext_lazy as _
 
 from core import models
-from core.models import Tutor, TutorForm
+from core.models import Tutor
 
 
 @admin.register(Tutor)
 class TutorAdmin(admin.ModelAdmin):
-    form = TutorForm
-    list_display = ['nome_completo', 'email']
-    readonly_fields = []
-    search_fields = ['nome_completo', 'email']
+    list_display = ['nome_completo', 'user_email']
+    search_fields = ['nome_completo', 'user__email']
+
+    def user_email(self, obj):
+        return obj.user.email if obj.user else '-'
+    user_email.short_description = 'Email do Usuário'
 
 
 class UserAdmin(BaseUserAdmin):
-    """Define the admin pages for users."""
+    """Define o admin do usuário."""
 
     ordering = ['id']
-    list_display = ['email', 'name']
+    list_display = ['email', 'name', 'is_staff']
+
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
-        (_('Personal Info'), {'fields': ('name', 'passage_id')}),
-        (_('Permissions'), {'fields': ('is_active', 'is_staff', 'is_superuser')}),
-        (_('Important dates'), {'fields': ('last_login',)}),
-        (_('Groups'), {'fields': ('groups',)}),
-        (_('User Permissions'), {'fields': ('user_permissions',)}),
+        (_('Informações pessoais'), {'fields': ('name', 'passage_id')}),
+        (_('Permissões'), {'fields': ('is_active', 'is_staff', 'is_superuser')}),
+        (_('Datas importantes'), {'fields': ('last_login',)}),
+        (_('Grupos'), {'fields': ('groups',)}),
+        (_('Permissões de usuário'), {'fields': ('user_permissions',)}),
     )
+
     readonly_fields = ['last_login']
+
     add_fieldsets = (
         (
             None,
