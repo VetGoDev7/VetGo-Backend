@@ -19,9 +19,7 @@ class Agendamento(models.Model):
     servico = models.ForeignKey(
     'core.Servico',
     on_delete=models.PROTECT,
-    related_name='agendamentos',
-    default=1
-)
+    related_name='agendamentos',)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pendente')
     criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
 
