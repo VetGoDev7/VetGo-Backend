@@ -7,17 +7,39 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.translation import gettext_lazy as _
 
 from core import models
-from core.models import Tutor
+from core.models import Tutor, Agendamento
+
+
+@admin.register(Agendamento)
+class AgendamentoAdmin(admin.ModelAdmin):
+    fields = ['pet', 'veterinario', 'servico', 'data_hora', 'status']
+
+    def get_changeform_initial_data(self, request):
+        initial = super().get_changeform_initial_data(request)
+
+        pet_id = request.GET.get('pet')  
+
+        if pet_id:
+            initial['pet'] = pet_id
+
+        return initial
+
 
 
 @admin.register(Tutor)
 class TutorAdmin(admin.ModelAdmin):
-    list_display = ['nome_completo', 'user_email']
-    search_fields = ['nome_completo', 'user__email']
+    list_display = ['nome_completo', 'email']
+    search_fields = ['nome_completo', 'email']
 
-    def user_email(self, obj):
-        return obj.user.email if obj.user else '-'
-    user_email.short_description = 'Email do Usuário'
+
+# -------------------------------
+#  ADMIN USER
+# -------------------------------
+def user_email(self, obj):
+    return obj.user.email if obj.user else '-'
+
+
+user_email.short_description = 'Email do Usuário'
 
 
 class UserAdmin(BaseUserAdmin):
@@ -57,7 +79,6 @@ class UserAdmin(BaseUserAdmin):
 
 
 admin.site.register(models.User, UserAdmin)
-admin.site.register(models.Agendamento)
 admin.site.register(models.Pet)
 admin.site.register(models.Veterinario)
 admin.site.register(models.Servico)

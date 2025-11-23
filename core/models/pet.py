@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.exceptions import ValidationError
-from core.models.tutor import Tutor  
+from core.models.tutor import Tutor
+  
 
 class Pet(models.Model):
     ESPECIE_CHOICES = [
