@@ -1,3 +1,4 @@
+from rest_framework.permissions import AllowAny
 from rest_framework import viewsets, permissions
 from rest_framework.exceptions import PermissionDenied
 from core.models import Tutor
@@ -24,6 +25,7 @@ class TutorViewSet(viewsets.ModelViewSet):
     queryset = Tutor.objects.all()
     serializer_class = TutorSerializer
     permission_classes = [IsAdminOrTheTutor]
+    permission_classes = [AllowAny]
 
     def get_queryset(self):
         user = self.request.user
