@@ -6,10 +6,6 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from core.models import Tutor
 
 
-def perform_destroy(self, instance):
-    instance.delete()
-
-
 class LoginView(APIView):
     def post(self, request):
         email = request.data.get('email')
