@@ -2,8 +2,7 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.conf import settings
-from datetime import datetime
-from django.utils import timezone
+from datetime import time
 
 
 class Agendamento(models.Model):
@@ -16,10 +15,7 @@ class Agendamento(models.Model):
     data_hora = models.DateTimeField()
     pet = models.ForeignKey('core.Pet', on_delete=models.PROTECT, related_name='agendamentos')
     veterinario = models.ForeignKey('core.Veterinario', on_delete=models.PROTECT, related_name='agendamentos')
-    servico = models.ForeignKey(
-    'core.Servico',
-    on_delete=models.PROTECT,
-    related_name='agendamentos',)
+    servico = models.ForeignKey('core.Servico', on_delete=models.PROTECT, related_name='agendamentos')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pendente')
     criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
 
@@ -35,14 +31,18 @@ class Agendamento(models.Model):
             if self.data_hora.weekday() > 4:
                 raise ValidationError('Agendamentos só podem ser feitos de segunda a sexta-feira.')
 
+            start_time = time(8, 0)
+            end_time = time(17, 0)
             hora = self.data_hora.time()
-            start_time = datetime.strptime('08:00', '%H:%M').time()
-            end_time = datetime.strptime('17:00', '%H:%M').time()
+
             if not (start_time <= hora <= end_time):
                 raise ValidationError('Horário permitido para agendamento: das 08:00 às 17:00.')
 
+
             conflito = Agendamento.objects.filter(
-                veterinario=self.veterinario, data_hora=self.data_hora, status__in=['pendente', 'confirmado']
+                veterinario=self.veterinario,
+                data_hora=self.data_hora,
+                status__in=['pendente', 'confirmado']
             )
             if self.pk:
                 conflito = conflito.exclude(pk=self.pk)
@@ -50,7 +50,10 @@ class Agendamento(models.Model):
                 raise ValidationError('O veterinário já possui um agendamento nesse horário.')
 
         if self.pet:
-            existe = Agendamento.objects.filter(pet=self.pet, status__in=['pendente', 'confirmado'])
+            existe = Agendamento.objects.filter(
+                pet=self.pet,
+                status__in=['pendente', 'confirmado']
+            )
             if self.pk:
                 existe = existe.exclude(pk=self.pk)
             if existe.exists():
@@ -58,9 +61,7 @@ class Agendamento(models.Model):
 
     def __str__(self):
         pet_nome = getattr(self.pet, 'nome', 'Sem Pet')
-        vet_nome = getattr(
-            self.veterinario, 'nome_completo', str(self.veterinario) if self.veterinario else 'Sem Veterinário'
-        )
+        vet_nome = getattr(self.veterinario, 'nome_completo', str(self.veterinario))
         return f'Agendamento: {self.data_hora} - {pet_nome} - {vet_nome}'
 
     class Meta:
