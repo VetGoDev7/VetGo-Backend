@@ -10,10 +10,13 @@ class IsAdminOrTutorPet(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
         user = request.user
+
         if user.is_staff:
             return True
-        if hasattr(user, 'tutor'):
-            return obj.tutor == user.tutor
+
+        if user.tipo == "TUTOR":  
+            return obj.tutor == user
+
         return False
 
 
@@ -21,25 +24,31 @@ class PetViewSet(viewsets.ModelViewSet):
     queryset = Pet.objects.all()
     serializer_class = PetSerializer
     permission_classes = [IsAdminOrTutorPet]
+    pagination_class = None
 
     def get_queryset(self):
         user = self.request.user
+
         if user.is_staff:
-            return Pet.objects.all().order_by('nome')
-        if hasattr(user, 'tutor'):
-            return Pet.objects.filter(tutor=user.tutor).order_by('nome')
+            return Pet.objects.all().order_by("nome")
+
+        if user.tipo == "TUTOR":
+            return Pet.objects.filter(tutor=user).order_by("nome")
 
         return Pet.objects.none()
 
     def perform_create(self, serializer):
         user = self.request.user
-        if hasattr(user, 'tutor'):
-            serializer.save(tutor=user.tutor)
+
+        if user.tipo == "TUTOR":
+            serializer.save(tutor=user)
         else:
             serializer.save()
 
     def perform_update(self, serializer):
         user = self.request.user
-        if hasattr(user, 'tutor') and 'tutor' in serializer.validated_data:
-            raise PermissionDenied('Você não pode alterar o tutor deste pet.')
+
+        if user.tipo == "TUTOR" and "tutor" in serializer.validated_data:
+            raise PermissionDenied("Você não pode alterar o tutor deste pet.")
+
         serializer.save()

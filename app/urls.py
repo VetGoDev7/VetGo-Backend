@@ -15,7 +15,12 @@ from core.views import (
     VeterinarioViewSet,
     ServicoViewSet,
     AgendamentoViewSet,
-    LoginView
+    MeView,
+)
+
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
 )
 
 router = DefaultRouter()
@@ -34,13 +39,13 @@ urlpatterns = [
     path('api/swagger/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
     path('api/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
 
-
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
-
     path('api/', include(router.urls)),
-
    
-    path('api/login/', LoginView.as_view(), name='login'),
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path("api/me/", MeView.as_view(), name="me"),
+
 ]

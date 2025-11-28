@@ -3,10 +3,7 @@ from core.models import Pet
 
 
 class PetSerializer(serializers.ModelSerializer):
-    idade = serializers.IntegerField(read_only=True)
-    tutor_nome = serializers.CharField(source='tutor.nome_completo', read_only=True)
-    tutor_email = serializers.CharField(source='tutor.email', read_only=True)
-
+    tutor_info = serializers.SerializerMethodField()
     class Meta:
         model = Pet
         fields = [
@@ -17,8 +14,15 @@ class PetSerializer(serializers.ModelSerializer):
             'idade',
             'observacao',
             'tutor',
-            'tutor_nome',
-            'tutor_email',
+            'tutor_info',
         ]
-        read_only_fields = ['id', 'idade']
         extra_kwargs = {'tutor': {'write_only': True}}
+    def get_tutor_info(self, obj):
+        tutor = obj.tutor
+        if not tutor:
+            return None
+        return {
+            'id': tutor.id,
+            'name': getattr(tutor, 'name', '') or '',
+            'email': getattr(tutor, 'email', '') or '',
+        }

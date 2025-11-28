@@ -16,46 +16,53 @@ class IsAdminOrTutor(permissions.BasePermission):
         if user.is_staff:
             return True
 
-        if hasattr(user, 'tutor'):
-            return obj.pet.tutor == user.tutor
+        if user.tipo == "TUTOR":
+            return obj.pet.tutor == user
 
-        if hasattr(user, 'veterinario'):
-            return obj.veterinario == user.veterinario
+        if user.tipo == "VETERINARIO":
+            return obj.veterinario == user
 
         return False
 
 
 class AgendamentoViewSet(viewsets.ModelViewSet):
-    queryset = Agendamento.objects.select_related('pet__tutor', 'pet', 'veterinario', 'servico').all()
+    queryset = (
+        Agendamento.objects
+        .select_related("pet__tutor", "pet", "veterinario", "servico")
+        .all()
+    )
     serializer_class = AgendamentoSerializer
     permission_classes = [IsAdminOrTutor]
+    pagination_class = None  
 
     def get_queryset(self):
         user = self.request.user
         qs = super().get_queryset()
 
         if user.is_staff:
-            return qs.order_by('data_hora')
+            return qs.order_by("data_hora")
 
-        if hasattr(user, 'tutor'):
-            return qs.filter(pet__tutor=user.tutor).order_by('data_hora')
+        if user.tipo == "TUTOR":
+            return qs.filter(pet__tutor=user).order_by("data_hora")
 
-        if hasattr(user, 'veterinario'):
-            return qs.filter(veterinario=user.veterinario).order_by('data_hora')
+        if user.tipo == "VETERINARIO":
+            return qs.filter(veterinario=user).order_by("data_hora")
 
         return qs.none()
 
     def perform_create(self, serializer):
         user = self.request.user
 
-        if hasattr(user, 'tutor'):
-            pet = serializer.validated_data.get('pet')
+        if user.tipo == "TUTOR":
+            pet = serializer.validated_data.get("pet")
 
             if not pet:
-                raise permissions.PermissionDenied('É necessário informar o pet.')
+                raise permissions.PermissionDenied("É necessário informar o pet.")
 
-            if pet.tutor != user.tutor:
-                raise permissions.PermissionDenied('Você só pode agendar consultas para seus próprios pets.')
+            if pet.tutor != user:
+                raise permissions.PermissionDenied(
+                    "Você só pode agendar consultas para seus próprios pets."
+                )
 
             serializer.save(criado_por=user)
 
@@ -65,44 +72,49 @@ class AgendamentoViewSet(viewsets.ModelViewSet):
     def perform_update(self, serializer):
         user = self.request.user
 
-        if hasattr(user, 'tutor'):
-            forbidden = ['status', 'veterinario', 'pet']
-
-            for campo in forbidden:
-                if campo in serializer.validated_data:
-                    raise permissions.PermissionDenied(f'Tutor não pode alterar o campo: {campo}')
+        if user.tipo == "TUTOR":
 
             serializer.save()
         else:
             serializer.save()
 
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=["post"])
     def confirmar(self, request, pk=None):
         if not request.user.is_staff:
-            return Response({'detail': 'Apenas admin pode alterar status.'}, status=status.HTTP_403_FORBIDDEN)
+            return Response(
+                {"detail": "Apenas admin pode alterar status."},
+                status=status.HTTP_403_FORBIDDEN
+            )
 
         ag = self.get_object()
-        ag.status = 'confirmado'
+        ag.status = "confirmado"
         ag.save()
         return Response(self.get_serializer(ag).data)
 
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=["post"])
     def cancelar(self, request, pk=None):
         if not request.user.is_staff:
-            return Response({'detail': 'Apenas admin pode alterar status.'}, status=status.HTTP_403_FORBIDDEN)
+            return Response(
+                {"detail": "Apenas admin pode alterar status."},
+                status=status.HTTP_403_FORBIDDEN
+            )
 
         ag = self.get_object()
-        ag.status = 'cancelado'
+        ag.status = "cancelado"
         ag.save()
         return Response(self.get_serializer(ag).data)
 
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=["get"])
     def proximos(self, request):
         agora = timezone.now()
+
         qs = (
             self.get_queryset()
-            .filter(data_hora__gte=agora, status__in=['pendente', 'confirmado'])
-            .order_by('data_hora')[:10]
+            .filter(
+                data_hora__gte=agora,
+                status__in=["pendente", "confirmado"]
+            )
+            .order_by("data_hora")[:10]
         )
 
         return Response(self.get_serializer(qs, many=True).data)

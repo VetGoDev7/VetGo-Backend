@@ -15,5 +15,5 @@ class UserViewSet(ModelViewSet):
 
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def me(self, request):
-        serializer = UserSerializer(request.user)
+        serializer  = UserSerializer(request.user)
         return Response(serializer.data)

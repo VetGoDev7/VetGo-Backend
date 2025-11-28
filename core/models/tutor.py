@@ -2,9 +2,14 @@ from django.db import models
 from django.core.validators import EmailValidator
 from django.contrib.auth.hashers import make_password
 from django import forms
-
+from django.conf import settings
 
 class Tutor(models.Model):
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="tutor",
+    )
     nome_completo = models.CharField(max_length=45, verbose_name='Nome Completo')
     email = models.EmailField(max_length=45, unique=True, validators=[EmailValidator()], verbose_name='E-mail')
     senha = models.CharField(max_length=128, verbose_name='Senha', null=True, blank=True)

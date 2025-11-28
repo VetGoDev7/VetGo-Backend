@@ -3,7 +3,6 @@ from core.models import Veterinario
 
 
 class VeterinarioSerializer(serializers.ModelSerializer):
-    nome_completo = serializers.CharField(source='user.nome_completo', read_only=True)
     email = serializers.EmailField(source='user.email', read_only=True)
     qtd_agendamentos = serializers.SerializerMethodField()
     horario_atendimento_formatado = serializers.SerializerMethodField()

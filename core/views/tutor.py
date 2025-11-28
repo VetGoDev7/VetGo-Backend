@@ -5,26 +5,25 @@ from core.models import Tutor
 from core.serializers import TutorSerializer
 
 
-class IsAdminOrTheTutor(permissions.BasePermission):
+class IsAdminOrTutorPet(permissions.BasePermission):
     def has_permission(self, request, view):
         return request.user and request.user.is_authenticated
 
     def has_object_permission(self, request, view, obj):
         user = request.user
-
+        
         if user.is_staff:
             return True
-
-        if hasattr(user, 'tutor'):
-            return obj == user.tutor
-
+        
+        if hasattr(user, "tutor"):
+            return obj.tutor == user.tutor
+        
         return False
 
 
 class TutorViewSet(viewsets.ModelViewSet):
     queryset = Tutor.objects.all()
     serializer_class = TutorSerializer
-    permission_classes = [IsAdminOrTheTutor]
     permission_classes = [AllowAny]
 
     def get_queryset(self):
@@ -36,14 +35,11 @@ class TutorViewSet(viewsets.ModelViewSet):
         if hasattr(user, 'tutor'):
             return Tutor.objects.filter(id=user.tutor.id)
 
-        return Tutor.objects.none()
+        return Tutor.objects.all()
 
     def perform_create(self, serializer):
         user = self.request.user
-
-        if not user.is_staff:
-            raise PermissionDenied('Apenas admin pode criar tutores.')
-
+        
         serializer.save()
 
     def perform_update(self, serializer):
@@ -59,8 +55,5 @@ class TutorViewSet(viewsets.ModelViewSet):
 
     def perform_destroy(self, instance):
         user = self.request.user
-
-        if not user.is_staff:
-            raise PermissionDenied('Apenas admin pode excluir tutores.')
 
         instance.delete()

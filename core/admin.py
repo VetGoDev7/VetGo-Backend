@@ -25,13 +25,6 @@ class AgendamentoAdmin(admin.ModelAdmin):
         return initial
 
 
-
-@admin.register(Tutor)
-class TutorAdmin(admin.ModelAdmin):
-    list_display = ['nome_completo', 'email']
-    search_fields = ['nome_completo', 'email']
-
-
 # -------------------------------
 #  ADMIN USER
 # -------------------------------
@@ -49,8 +42,7 @@ class UserAdmin(BaseUserAdmin):
     list_display = ['email', 'name', 'is_staff']
 
     fieldsets = (
-        (None, {'fields': ('email', 'password')}),
-        (_('Informações pessoais'), {'fields': ('name', 'passage_id')}),
+        (None, {'fields': ('email', 'password', 'name', 'tipo')}),
         (_('Permissões'), {'fields': ('is_active', 'is_staff', 'is_superuser')}),
         (_('Datas importantes'), {'fields': ('last_login',)}),
         (_('Grupos'), {'fields': ('groups',)}),

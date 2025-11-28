@@ -4,4 +4,4 @@ from .pet import PetViewSet
 from .veterinario import VeterinarioViewSet
 from .servico import ServicoViewSet
 from .agendamento import AgendamentoViewSet
-from .login import LoginView
+from .me import MeView
