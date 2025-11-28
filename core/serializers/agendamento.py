@@ -3,15 +3,18 @@ from django.utils import timezone
 from datetime import time
 from core.models import Agendamento, Pet, Veterinario, Servico
 
+
 class PetNestedSerializer(serializers.ModelSerializer):
     class Meta:
         model = Pet
         fields = ['id', 'nome', 'especie', 'raca', 'idade']
 
+
 class AgendamentoSerializer(serializers.ModelSerializer):
     pet_info = PetNestedSerializer(source='pet', read_only=True)
     veterinario_info = serializers.SerializerMethodField()
     servico_info = serializers.SerializerMethodField()
+    tutor_info = serializers.SerializerMethodField()  # 👈 ADICIONADO
 
     pet = serializers.PrimaryKeyRelatedField(queryset=Pet.objects.all(), write_only=True)
     veterinario = serializers.PrimaryKeyRelatedField(queryset=Veterinario.objects.all(), write_only=True)
@@ -29,9 +32,17 @@ class AgendamentoSerializer(serializers.ModelSerializer):
             'veterinario_info',
             'servico',
             'servico_info',
+            'tutor_info',
             'criado_por',
         ]
-        read_only_fields = ['id', 'criado_por', 'pet_info', 'veterinario_info', 'servico_info']
+        read_only_fields = [
+            'id',
+            'criado_por',
+            'pet_info',
+            'veterinario_info',
+            'servico_info',
+            'tutor_info',
+        ]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -45,18 +56,27 @@ class AgendamentoSerializer(serializers.ModelSerializer):
             return None
         return {
             'id': vet.id,
-            'nome_completo': getattr(vet, 'nome_completo', '') or '',
-            'especialidade': getattr(vet, 'especialidade', '') or '',
+            'nome_completo': getattr(vet, 'nome_completo', ''),
+            'especialidade': getattr(vet, 'especialidade', ''),
         }
 
     def get_servico_info(self, obj):
         s = obj.servico
         if not s:
             return None
-        return {'id': s.id, 'nome': getattr(s, 'nome', '') or ''}
+        return {'id': s.id, 'nome': getattr(s, 'nome', '')}
+
+    def get_tutor_info(self, obj):
+        tutor = obj.pet.tutor if obj.pet else None
+        if not tutor:
+            return None
+        return {
+            "id": tutor.id,
+            "nome_completo": getattr(tutor, "nome_completo", None) or tutor.nome,
+            "telefone": getattr(tutor, "telefone", None),
+        }
 
     def validate_data_hora(self, value):
-
         if value < timezone.now():
             raise serializers.ValidationError('A data e hora do agendamento não pode ser no passado.')
         if value.weekday() > 4:
@@ -71,30 +91,23 @@ class AgendamentoSerializer(serializers.ModelSerializer):
         veterinario = attrs.get('veterinario')
         data_hora = attrs.get('data_hora')
 
-
         if request and hasattr(request.user, 'tutor') and pet:
             tutor = request.user.tutor
             if pet.tutor != tutor:
                 raise serializers.ValidationError('Você só pode agendar consultas para seus próprios pets.')
 
-        # Conflito de horário para veterinário
         if veterinario and data_hora:
             conflito_vet = Agendamento.objects.filter(
-                veterinario=veterinario,
-                data_hora=data_hora,
-                status__in=['pendente', 'confirmado']
+                veterinario=veterinario, data_hora=data_hora, status__in=['pendente', 'confirmado']
             )
             if self.instance:
                 conflito_vet = conflito_vet.exclude(id=self.instance.id)
             if conflito_vet.exists():
                 raise serializers.ValidationError('O veterinário já possui um agendamento neste horário.')
 
-
         if pet and data_hora:
             conflito_pet = Agendamento.objects.filter(
-                pet=pet,
-                data_hora__gte=timezone.now(),
-                status__in=['pendente', 'confirmado']
+                pet=pet, data_hora=data_hora, status__in=['pendente', 'confirmado']
             )
             if self.instance:
                 conflito_pet = conflito_pet.exclude(id=self.instance.id)

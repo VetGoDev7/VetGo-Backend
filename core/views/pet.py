@@ -2,6 +2,7 @@ from rest_framework import viewsets, permissions
 from rest_framework.exceptions import PermissionDenied
 from core.models import Pet
 from core.serializers import PetSerializer
+from rest_framework.permissions import IsAuthenticated
 
 
 class IsAdminOrTutorPet(permissions.BasePermission):
@@ -20,7 +21,7 @@ class IsAdminOrTutorPet(permissions.BasePermission):
 class PetViewSet(viewsets.ModelViewSet):
     queryset = Pet.objects.all()
     serializer_class = PetSerializer
-    permission_classes = [IsAdminOrTutorPet]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
